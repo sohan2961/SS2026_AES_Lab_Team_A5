@@ -19,17 +19,10 @@ Since there is no real pump available now, the relay is used to simulate an actu
 <!-- AUTO_DASHBOARD_START -->
 | Member | Responsible Node | Folder | Commits | Last Activity | Progress |
 |---|---|---|---:|---|---|
-<<<<<<< Updated upstream
 | Md Mostafizur Rahman | Raspberry Pi 3 — Central Controller | `01_RaspberryPi_Central_Controller_MdMostafizurRahman/` | 4 | 2026-06-04 by Md Mostafizur Rahman | 80% |
 | Turja Barua | ESP32-1 — Environment Monitoring Node | `02_ESP32_Environment_Node_TurjaBarua/` | 3 | 2026-06-04 by Md Mostafizur Rahman | 60% |
 | Moaj Chowdhury | ESP32-2 — Fire and Gas Safety Node | `03_ESP32_FireGas_Safety_Node_MoajChowdhury/` | 3 | 2026-06-04 by Md Mostafizur Rahman | 60% |
 | Deepak Kapil | Arduino Uno WiFi Rev2 — Actuator / Relay Node | `04_Arduino_Relay_Node_DeepakKapil/` | 3 | 2026-06-04 by Md Mostafizur Rahman | 60% |
-=======
-| Md Mostafizur Rahman | Raspberry Pi 3 — Central Controller | `01_RaspberryPi_Central_Controller_MdMostafizurRahman/` | 0 | Not updated yet | 0% |
-| Turja Barua | ESP32-1 — Environment Monitoring Node | `02_ESP32_Environment_Node_TurjaBarua/` | 0 | Not updated yet | 0% |
-| Moaj Chowdhury | ESP32-2 — Fire and Gas Safety Node | `03_ESP32_FireGas_Safety_Node_MoajChowdhury/` | 0 | Not updated yet | 0% |
-| Deepak Kapil | Arduino Uno WiFi Rev2 — Actuator / Relay Node | `04_Arduino_Relay_Node_DeepakKapil/` | 0 | Not updated yet | 0% |
->>>>>>> Stashed changes
 <!-- AUTO_DASHBOARD_END -->
 
 ---
