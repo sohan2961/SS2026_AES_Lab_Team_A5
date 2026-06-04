@@ -1,148 +1,151 @@
-# Smart Greenhouse System with Fire Detection
+# Smart Greenhouse Monitoring System with Fire and Gas Detection
 
-## Project Overview
+This repository is divided into **one main project folder** and **four member folders**. Each member is responsible for one node of the total IoT greenhouse system.
 
-The **Smart Greenhouse System with Fire Detection** is an IoT-based embedded system project designed to monitor greenhouse environmental conditions and provide automatic safety responses. The system uses a **Raspberry Pi 5** as the central controller and dashboard, while **ESP32 microcontrollers** collect sensor data and control actuators.
+## Project Dashboard
 
-The main goal of this project is to improve plant monitoring, automate irrigation, and detect dangerous conditions such as fire, smoke, gas leakage, and poor air quality.
+> This dashboard is automatically updated by GitHub Actions after every commit.
 
-## Block Diagram
+<!-- AUTO_DASHBOARD_START -->
+| Member | Responsible Node | Folder | Commits | Last Activity | Progress |
+|---|---|---|---:|---|---|
+| Md Mostafizur Rahman | Raspberry Pi 3 — Central Controller | `01_RaspberryPi_Central_Controller_MdMostafizurRahman/` | 0 | Not updated yet | 0% |
+| Turja Barua | ESP32-1 — Environment Monitoring Node | `02_ESP32_Environment_Node_TurjaBarua/` | 0 | Not updated yet | 0% |
+| Moaj Chowdhury | ESP32-2 — Fire and Gas Safety Node | `03_ESP32_FireGas_Safety_Node_MoajChowdhury/` | 0 | Not updated yet | 0% |
+| Deepak Kapil | Arduino Uno WiFi Rev2 — Actuator / Relay Node | `04_Arduino_Relay_Node_DeepakKapil/` | 0 | Not updated yet | 0% |
+<!-- AUTO_DASHBOARD_END -->
 
-![Smart Greenhouse System Block Diagram](smart_greenhouse_block_diagram.png)
+## Team Task Division
 
-## Hardware Elements
+### 1. Md Mostafizur Rahman — Raspberry Pi 3 Central Controller
+Folder: `01_RaspberryPi_Central_Controller_MdMostafizurRahman/`
 
-The following hardware components are used in this project:
+Main tasks:
+- Install and configure MQTT broker on Raspberry Pi 3.
+- Create Python monitoring program.
+- Receive MQTT data from ESP32 and Arduino nodes.
+- Print or store sensor data.
+- Show dashboard or terminal status.
+- Send actuator commands to Arduino relay node.
 
-1. Raspberry Pi 5  
-2. 3 ESP32 microcontrollers  
-3. MQ-2 smoke/gas sensor  
-4. IR flame sensor  
-5. Relay module and water pump  
-6. I2C LCD display  
-7. LEDs  
-8. Resistors  
-9. Jumper wires and breadboard  
-10. Buzzer  
-11. Soil moisture sensor  
-12. Temperature sensors  
-13. MQ-135 air quality sensor  
+Expected output:
+- MQTT broker running on Raspberry Pi.
+- Python dashboard or terminal monitor.
+- Logs of temperature, humidity, gas, flame, and relay status.
 
-## System Architecture
+### 2. Turja Barua — ESP32-1 Environment Monitoring Node
+Folder: `02_ESP32_Environment_Node_TurjaBarua/`
 
-The system is divided into one central controller and three ESP32-based nodes.
+Main tasks:
+- Connect KY-015 temperature and humidity sensor.
+- Connect I2C LCD display.
+- Connect rotation sensor as manual threshold input.
+- Read temperature and humidity values.
+- Show values locally on LCD.
+- Send environment data to Raspberry Pi using MQTT.
 
-### Raspberry Pi 5
+Expected output:
+- Temperature and humidity readings.
+- LCD display output.
+- MQTT messages to Raspberry Pi.
 
-The Raspberry Pi 5 works as the main controller and monitoring unit. It can be used for:
+### 3. Moaj Chowdhury — ESP32-2 Fire and Gas Safety Node
+Folder: `03_ESP32_FireGas_Safety_Node_MoajChowdhury/`
 
-- Running the MQTT broker
-- Receiving data from ESP32 nodes
-- Storing sensor data
-- Displaying values on a dashboard
-- Making control decisions
-- Sending commands to ESP32 actuator nodes
+Main tasks:
+- Connect MQ-2 smoke/gas sensor.
+- Connect KY-026 analog flame sensor.
+- Connect KY-006 passive buzzer.
+- Connect KY-016 RGB LED.
+- Detect gas/smoke and flame/fire.
+- Turn on buzzer and warning LED during danger.
+- Send alert data to Raspberry Pi using MQTT.
 
-### ESP32-1: Environment Monitoring Node
+Expected output:
+- Gas/smoke detection status.
+- Flame/fire detection status.
+- Local buzzer and RGB LED warning.
+- MQTT alert messages.
 
-This ESP32 is responsible for monitoring the greenhouse environment.
+### 4. Deepak Kapil — Arduino Uno WiFi Rev2 Actuator / Relay Node
+Folder: `04_Arduino_Relay_Node_DeepakKapil/`
 
-Connected components:
+Main tasks:
+- Connect KY-019 relay module.
+- Use relay to simulate actuator control with an LED.
+- Receive ON/OFF command from Raspberry Pi using Wi-Fi/MQTT.
+- Switch relay ON/OFF.
+- In future version, replace LED simulation with water pump, fan, or light.
 
-- Soil moisture sensor
-- Temperature sensor
-- I2C LCD display
+Expected output:
+- Relay ON/OFF control.
+- Actuator simulation using LED.
+- MQTT command reception.
 
-Main functions:
-
-- Read soil moisture value
-- Read temperature value
-- Display local values on the LCD
-- Send sensor data to the Raspberry Pi through Wi-Fi/MQTT
-
-### ESP32-2: Fire and Gas Safety Node
-
-This ESP32 is used for safety monitoring.
-
-Connected components:
-
-- MQ-2 smoke/gas sensor
-- IR flame sensor
-- MQ-135 air quality sensor
-- Buzzer
-- Warning LED
-
-Main functions:
-
-- Detect smoke or gas leakage
-- Detect flame/fire
-- Monitor air quality
-- Activate buzzer during emergency
-- Turn on warning LED
-- Send alert messages to the Raspberry Pi
-
-### ESP32-3: Actuator Control Node
-
-This ESP32 controls the output devices.
-
-Connected components:
-
-- Relay module
-- Water pump
-- Status LEDs
-
-Main functions:
-
-- Receive control commands from the Raspberry Pi
-- Turn the water pump ON or OFF
-- Control status LEDs
-- Support automatic irrigation
-
-## Communication Method
-
-The system uses **Wi-Fi and MQTT** for communication between the Raspberry Pi 5 and ESP32 boards.
-
-Example MQTT topics:
+## Repository Folder Structure
 
 ```text
-greenhouse/soil
-greenhouse/temperature
-greenhouse/smoke
-greenhouse/flame
-greenhouse/airquality
-greenhouse/pump
-greenhouse/alarm
+Smart_Greenhouse_Team_Project/
+├── README.md
+├── docs/
+│   └── system_overview.md
+├── scripts/
+│   └── update_dashboard.py
+├── .github/
+│   └── workflows/
+│       └── update-dashboard.yml
+├── 01_RaspberryPi_Central_Controller_MdMostafizurRahman/
+│   ├── README.md
+│   ├── src/
+│   ├── logs/
+│   └── docs/
+├── 02_ESP32_Environment_Node_TurjaBarua/
+│   ├── README.md
+│   ├── src/
+│   └── docs/
+├── 03_ESP32_FireGas_Safety_Node_MoajChowdhury/
+│   ├── README.md
+│   ├── src/
+│   └── docs/
+└── 04_Arduino_Relay_Node_DeepakKapil/
+    ├── README.md
+    ├── src/
+    └── docs/
 ```
 
-## Working Principle
+## MQTT Topic Plan
 
-1. Sensors collect real-time data from the greenhouse.
-2. ESP32 nodes send sensor data to the Raspberry Pi 5 using MQTT.
-3. The Raspberry Pi processes the received data.
-4. If soil moisture is low, the water pump can be turned ON automatically.
-5. If fire, smoke, or gas is detected, the buzzer and warning LED are activated.
-6. Sensor values and system status can be displayed on a local LCD and web dashboard.
+```text
+greenhouse/env/temperature
+greenhouse/env/humidity
+greenhouse/env/threshold
+greenhouse/safety/gas
+greenhouse/safety/flame
+greenhouse/safety/alarm
+greenhouse/actuator/relay/set
+greenhouse/actuator/relay/status
+```
 
-## Main Features
+## How the Dashboard Auto-Sync Works
 
-- Real-time greenhouse monitoring
-- Automatic irrigation control
-- Fire and smoke detection
-- Gas and air quality monitoring
-- Local LCD display
-- Warning system using buzzer and LEDs
-- Wireless communication using ESP32 and MQTT
-- Raspberry Pi-based dashboard and data logging
+1. A member commits changes inside their own folder.
+2. GitHub Actions runs `.github/workflows/update-dashboard.yml`.
+3. The workflow runs `scripts/update_dashboard.py`.
+4. The script checks Git commit history for each folder.
+5. The table between `AUTO_DASHBOARD_START` and `AUTO_DASHBOARD_END` is updated.
+6. The updated README is committed automatically.
 
-## Possible Future Improvements
+## Progress Rule
 
-- Add humidity sensor
-- Add camera monitoring
-- Add mobile app notification
-- Store sensor data in a database
-- Add solar power support
-- Add remote control through a web dashboard
+Progress is estimated by number of commits in each member folder:
 
-## Conclusion
+```text
+0 commits   = 0%
+1 commit    = 20%
+2 commits   = 40%
+3 commits   = 60%
+4 commits   = 80%
+5+ commits  = 100%
+```
 
-This project combines environmental monitoring, IoT communication, automatic irrigation, and fire detection in one smart greenhouse system. It is suitable for an embedded systems or IoT-based lab project because it includes sensors, actuators, wireless communication, real-time monitoring, and safety features.
+This is a simple student-project progress indicator. Final progress should also be confirmed manually by testing the hardware.
