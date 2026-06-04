@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Greenhouse — Project Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+  .topbar { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 28px; height: 28px; }
+  .repo-path { font-size: 14px; color: #8b949e; }
+  .repo-path a { color: #58a6ff; text-decoration: none; }
+  .repo-path a:hover { text-decoration: underline; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .btn { padding: 5px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid #30363d; background: #21262d; color: #c9d1d9; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s; }
+  .btn:hover { background: #30363d; }
+  .btn-green { background: #238636; border-color: #2ea043; color: #fff; }
+  .btn-green:hover { background: #2ea043; }
+  .sync-status { font-size: 12px; color: #8b949e; display: flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #3fb950; display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  .header-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .project-title { font-size: 20px; font-weight: 600; color: #e6edf3; margin-bottom: 4px; }
+  .project-sub  { font-size: 13px; color: #8b949e; margin-bottom: 12px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+  .badge-blue  { background: #1f3a5c; color: #58a6ff; border: 1px solid #1f6feb; }
+  .badge-green { background: #0f2d1a; color: #3fb950; border: 1px solid #238636; }
+  .badge-amber { background: #2d1b00; color: #e3b341; border: 1px solid #9e6a03; }
+  .badge-gray  { background: #21262d; color: #8b949e; border: 1px solid #30363d; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px; }
+  .stat-label { font-size: 11px; color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-value { font-size: 24px; font-weight: 600; color: #e6edf3; }
+  .stat-sub    { font-size: 11px; color: #8b949e; margin-top: 2px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  @media(max-width: 760px){ .grid2 { grid-template-columns: 1fr; } }
+
+  .section-title { font-size: 14px; font-weight: 600; color: #e6edf3; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 18px 20px; }
+
+  /* Member cards */
+  .member-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media(max-width: 760px){ .member-cards { grid-template-columns: 1fr; } }
+
+  .member-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px 18px; transition: border-color 0.2s; }
+  .member-card:hover { border-color: #58a6ff; }
+  .mc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .av-blue   { background: #1f3a5c; color: #58a6ff; }
+  .av-green  { background: #0f2d1a; color: #3fb950; }
+  .av-orange { background: #2d1500; color: #f0883e; }
+  .av-purple { background: #2a1a3e; color: #bc8cff; }
+  .mc-name   { font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .mc-node   { font-size: 12px; color: #8b949e; }
+  .mc-folder { font-size: 11px; font-family: 'Courier New', monospace; color: #58a6ff; background: #1f2d3d; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; display: inline-block; }
+
+  .progress-bar-wrap { margin-bottom: 8px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: #8b949e; margin-bottom: 4px; }
+  .progress-track { background: #21262d; border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-fill  { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .pf-blue   { background: #1f6feb; }
+  .pf-green  { background: #238636; }
+  .pf-orange { background: #da6820; }
+  .pf-purple { background: #6e40c9; }
+
+  .mc-stats { display: flex; gap: 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #21262d; }
+  .mc-stat  { text-align: center; }
+  .mc-stat-val { font-size: 16px; font-weight: 600; color: #e6edf3; }
+  .mc-stat-lbl { font-size: 10px; color: #8b949e; text-transform: uppercase; }
+
+  .mc-tasks { margin-top: 10px; }
+  .task-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8b949e; padding: 3px 0; }
+  .task-item.done { color: #3fb950; }
+  .task-item.done .task-icon { color: #3fb950; }
+  .task-item.pending .task-icon { color: #6e7681; }
+  .task-icon { font-size: 13px; }
+
+  /* Commit feed */
+  .commit-list { display: flex; flex-direction: column; gap: 0; }
+  .commit-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #21262d; }
+  .commit-item:last-child { border-bottom: none; }
+  .commit-av { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .commit-body { flex: 1; min-width: 0; }
+  .commit-msg { font-size: 13px; color: #e6edf3; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .commit-msg a { color: #e6edf3; text-decoration: none; }
+  .commit-msg a:hover { color: #58a6ff; }
+  .commit-meta { font-size: 11px; color: #8b949e; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .commit-hash { font-family: 'Courier New', monospace; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #8b949e; font-size: 10px; }
+  .folder-tag { font-size: 10px; padding: 1px 7px; border-radius: 10px; }
+
+  /* Activity heatmap */
+  .heatmap-wrap { overflow-x: auto; }
+  .heatmap-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px; width: fit-content; }
+  .hm-cell { width: 12px; height: 12px; border-radius: 2px; background: #21262d; }
+  .hm-1 { background: #0e4429; }
+  .hm-2 { background: #006d32; }
+  .hm-3 { background: #26a641; }
+  .hm-4 { background: #39d353; }
+  .hm-months { display: flex; gap: 3px; margin-bottom: 4px; font-size: 10px; color: #8b949e; width: fit-content; }
+  .hm-month { width: auto; }
+
+  /* Error / loading */
+  .loading { text-align: center; padding: 24px; color: #8b949e; font-size: 13px; }
+  .error-box { background: #2d1b00; border: 1px solid #9e6a03; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #e3b341; margin-bottom: 16px; }
+
+  .repo-input-wrap { display: flex; gap: 8px; margin-bottom: 20px; }
+  .repo-input { flex: 1; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; color: #e6edf3; font-size: 13px; outline: none; }
+  .repo-input:focus { border-color: #58a6ff; }
+  .repo-input::placeholder { color: #6e7681; }
+
+  .tab-bar { display: flex; gap: 0; border-bottom: 1px solid #30363d; margin-bottom: 20px; }
+  .tab { padding: 8px 16px; font-size: 13px; color: #8b949e; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+  .tab:hover { color: #e6edf3; }
+  .tab.active { color: #e6edf3; border-bottom-color: #f78166; }
+  .tab-count { background: #21262d; color: #8b949e; font-size: 10px; padding: 1px 6px; border-radius: 10px; }
+
+  .footer { text-align: center; font-size: 11px; color: #6e7681; padding: 24px; border-top: 1px solid #21262d; margin-top: 24px; }
+
+  .setup-banner { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .setup-step { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; background: #1f3a5c; color: #58a6ff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-text { font-size: 13px; color: #8b949e; line-height: 1.5; }
+  .step-text code { background: #21262d; color: #e6edf3; padding: 1px 6px; border-radius: 4px; font-size: 12px; font-family: 'Courier New', monospace; }
+  .step-text strong { color: #e6edf3; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="#e6edf3" stroke-width="1.5">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+      <path d="M8 12h8M12 8v8"/>
+    </svg>
+    <span class="repo-path">
+      <a href="#" id="owner-link">your-team</a> /
+      <a href="#" id="repo-link"><strong>smart-greenhouse</strong></a>
+    </span>
+  </div>
+  <div class="topbar-right">
+    <span class="sync-status"><span class="dot"></span> <span id="last-sync">Configure repo below</span></span>
+    <button class="btn" onclick="fetchAll()">↻ Sync</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Repo config -->
+  <div class="setup-banner" id="setup-section">
+    <div class="section-title">⚙ Connect your GitHub repository</div>
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-text">Create a GitHub repository and push your 5 folders: <code>main/</code>, <code>rpi_central/</code>, <code>esp32_env/</code>, <code>esp32_fire/</code>, <code>arduino_actuator/</code></div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-text">Enter your GitHub repo below as <code>owner/repo-name</code> (e.g. <code>mostafizur/smart-greenhouse</code>). The dashboard uses the <strong>public GitHub API</strong> — no token needed for public repos.</div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-text">Click <strong>Connect</strong>. The dashboard will auto-fetch commits, activity, and file changes and refresh every 60 seconds.</div>
+    </div>
+    <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <input class="repo-input" id="repo-input" placeholder="owner/repository  e.g. mostafizur/smart-greenhouse" style="max-width:400px;">
+      <button class="btn btn-green" onclick="connectRepo()">Connect repository</button>
+    </div>
+    <div id="repo-error" style="display:none; margin-top:10px; font-size:12px; color:#f85149;"></div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Commits</div>
+      <div class="stat-value" id="stat-commits">—</div>
+      <div class="stat-sub">across all branches</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Contributors</div>
+      <div class="stat-value" id="stat-contributors">4</div>
+      <div class="stat-sub">team members</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Open Issues</div>
+      <div class="stat-value" id="stat-issues">—</div>
+      <div class="stat-sub">tasks / bugs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Last Push</div>
+      <div class="stat-value" id="stat-lastpush" style="font-size:16px; margin-top:4px;">—</div>
+      <div class="stat-sub" id="stat-lastpush-sub"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Stars</div>
+      <div class="stat-value" id="stat-stars">—</div>
+      <div class="stat-sub">repository</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Forks</div>
+      <div class="stat-value" id="stat-forks">—</div>
+      <div class="stat-sub">repository</div>
+    </div>
+  </div>
+
+  <!-- Member cards -->
+  <div class="section-title" style="margin-bottom:16px;">👥 Team members &amp; node progress</div>
+  <div class="member-cards" id="member-grid">
+
+    <div class="member-card" id="card-mostafizur">
+      <div class="mc-header">
+        <div class="avatar av-blue">MR</div>
+        <div>
+          <div class="mc-name">Md Mostafizur Rahman</div>
+          <div class="mc-node">Raspberry Pi 3 — Central Controller</div>
+        </div>
+      </div>
+      <div class="mc-folder">📁 rpi_central/</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Node progress</span><span id="prog-mostafizur">0%</span></div>
+        <div class="progress-track"><div class="progress-fill pf-blue" id="bar-mostafizur" style="width:0%"></div></div>
+      </div>
+      <div class="mc-stats">
+        <div class="mc-stat"><div class="mc-stat-val" id="commits-mostafizur">0</div><div class="mc-stat-lbl">Commits</div></div>
+        <div class="mc-stat"><div class="mc-stat-val" id="files-mostafizur">0</div><div class="mc-stat-lbl">Files</div></div>
+        <div class="mc-stat"><div class="mc-stat-val" id="last-mostafizur">—</div><div class="mc-stat-lbl">Last active</div></div>
+      </div>
+      <div class="mc-tasks" id="tasks-mostafizur">
+        <div class="task-item pending"><span class="task-icon">○</span> MQTT broker running</div>
+        <div class="task-item pending"><span class="task-icon">○</span> monitor.py script written</div>
+        <div class="task-item pending"><span class="task-icon">○</span> CSV data logging</div>
+        <div class="task-item pending"><span class="task-icon">○</span> Relay command tested</div>
+      </div>
+    </div>
+
+    <div class="member-card" id="card-turja">
+      <div class="mc-header">
+        <div class="avatar av-green">TB</div>
+        <div>
+          <div class="mc-name">Turja Barua</div>
+          <div class="mc-node">ESP32-1 — Environment Monitoring</div>
+        </div>
+      </div>
+      <div class="mc-folder">📁 esp32_env/</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Node progress</span><span id="prog-turja">0%</span></div>
+        <div class="progress-track"><div class="progress-fill pf-green" id="bar-turja" style="width:0%"></div></div>
+      </div>
+      <div class="mc-stats">
+        <div class="mc-stat"><div class="mc-stat-val" id="commits-turja">0</div><div class="mc-stat-lbl">Commits</div></div>
+        <div class="mc-stat"><div class="mc-stat-val" id="files-turja">0</div><div class="mc-stat-lbl">Files</div></div>
+        <div class="mc-stat"><div class="mc-stat-val" id="last-turja">—</div><div class="mc-stat-lbl">Last active</div></div>
+      </div>
+      <div class="mc-tasks">
+        <div class="task-item pending"><span class="task-icon">○</span> KY-015 wired &amp; reading</div>
+        <div class="task-item pending"><span class="task-icon">○</span> I2C LCD displaying values</div>
+        <div class="task-item pending"><span class="task-icon">○</span> Rotation sensor threshold</div>
+        <div class="task-item pending"><span class="task-icon">○</span> MQTT publishing confirmed</div>
+      </div>
+    </div>
+
+    <div class="member-card" id="card-moaj">
+      <div class="mc-header">
+        <div class="avatar av-orange">MC</div>
+        <div>
+          <div class="mc-name">Moaj Chowdhury</div>
+          <div class="mc-node">ESP32-2 — Fire &amp; Gas Safety</div>
+        </div>
+      </div>
+      <div class="mc-folder">📁 esp32_fire/</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Node progress</span><span id="prog-moaj">0%</span></div>
+        <div class="progress-track"><div class="progress-fill pf-orange" id="bar-moaj" style="width:0%"></div></div>
+      </div>
+      <div class="mc-stats">
+        <div class="mc-stat"><div class="mc-stat-val" id="commits-moaj">0</div><div class="mc-stat-lbl">Commits</div></div>
+        <div class="mc-stat"><div class="mc-stat-val" id="files-moaj">0</div><div class="mc-stat-lbl">Files</div></div>
+        <div class="mc-stat"><div class="mc-stat-val" id="last-moaj">—</div><div class="mc-stat-lbl">Last active</div></div>
+      </div>
+      <div class="mc-tasks">
+        <div class="task-item pending"><span class="task-icon">○</span> MQ-2 reading smoke values</div>
+        <div class="task-item pending"><span class="task-icon">○</span> KY-026 flame detection</div>
+        <div class="task-item pending"><span class="task-icon">○</span> Buzzer alarm working</div>
+        <div class="task-item pending"><span class="task-icon">○</span> RGB LED status logic</div>
+      </div>
+    </div>
+
+    <div class="member-card" id="card-deepak">
+      <div class="mc-header">
+        <div class="avatar av-purple">DK</div>
+        <div>
+          <div class="mc-name">Deepak Kapil</div>
+          <div class="mc-node">Arduino Uno WiFi Rev2 — Actuator</div>
+        </div>
+      </div>
+      <div class="mc-folder">📁 arduino_actuator/</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Node progress</span><span id="prog-deepak">0%</span></div>
+        <div class="progress-track"><div class="progress-fill pf-purple" id="bar-deepak" style="width:0%"></div></div>
+      </div>
+      <div class="mc-stats">
+        <div class="mc-stat"><div class="mc-stat-val" id="commits-deepak">0</div><div class="mc-stat-lbl">Commits</div></div>
+        <div class="mc-stat"><div class="mc-stat-val" id="files-deepak">0</div><div class="mc-stat-lbl">Files</div></div>
+        <div class="mc-stat"><div class="mc-stat-val" id="last-deepak">—</div><div class="mc-stat-lbl">Last active</div></div>
+      </div>
+      <div class="mc-tasks">
+        <div class="task-item pending"><span class="task-icon">○</span> KY-019 relay wired</div>
+        <div class="task-item pending"><span class="task-icon">○</span> Wi-Fi + MQTT connected</div>
+        <div class="task-item pending"><span class="task-icon">○</span> Relay ON/OFF from MQTT</div>
+        <div class="task-item pending"><span class="task-icon">○</span> LED simulation working</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Commits + Activity -->
+  <div class="grid2">
+
+    <div class="card">
+      <div class="section-title">📝 Recent commits</div>
+      <div id="commit-feed"><div class="loading">Connect a repository to see commits</div></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">📊 Commit activity — last 12 weeks</div>
+      <div id="activity-section"><div class="loading">Connect a repository to see activity</div></div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer">
+  Smart Greenhouse Monitoring System · Raspberry Pi 3 + ESP32 + Arduino Uno WiFi Rev2 ·
+  Dashboard auto-refreshes every 60 s · GitHub API (public repos, no token required)
+</div>
+
+<script>
+let REPO = '';
+let refreshTimer = null;
+
+const FOLDER_MAP = {
+  'rpi_central':      { member: 'mostafizur', color: '#1f6feb', label: 'rpi_central/' },
+  'esp32_env':        { member: 'turja',      color: '#238636', label: 'esp32_env/' },
+  'esp32_fire':       { member: 'moaj',       color: '#da6820', label: 'esp32_fire/' },
+  'arduino_actuator': { member: 'deepak',     color: '#6e40c9', label: 'arduino_actuator/' },
+  'main':             { member: null,         color: '#8b949e', label: 'main/' },
+};
+
+const MEMBER_FOLDERS = {
+  mostafizur: 'rpi_central',
+  turja:      'esp32_env',
+  moaj:       'esp32_fire',
+  deepak:     'arduino_actuator',
+};
+
+const AV_COLORS = {
+  mostafizur: '#1f6feb',
+  turja:      '#238636',
+  moaj:       '#da6820',
+  deepak:     '#6e40c9',
+};
+
+const AV_INITIALS = {
+  mostafizur: 'MR',
+  turja:      'TB',
+  moaj:       'MC',
+  deepak:     'DK',
+};
+
+function connectRepo() {
+  const val = document.getElementById('repo-input').value.trim();
+  const err = document.getElementById('repo-error');
+  if (!val.includes('/')) {
+    err.textContent = 'Please enter as owner/repo-name';
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  REPO = val;
+  document.getElementById('owner-link').textContent = val.split('/')[0];
+  document.getElementById('repo-link').querySelector('strong').textContent = val.split('/')[1];
+  document.getElementById('last-sync').textContent = 'Connecting…';
+  document.getElementById('setup-section').style.display = 'none';
+  fetchAll();
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(fetchAll, 60000);
+}
+
+async function ghFetch(path) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}${path}`, {
+    headers: { 'Accept': 'application/vnd.github.v3+json' }
+  });
+  if (!r.ok) throw new Error(`GitHub API ${r.status}: ${r.statusText}`);
+  return r.json();
+}
+
+async function fetchAll() {
+  if (!REPO) return;
+  try {
+    const [repoData, commits, contributors] = await Promise.all([
+      ghFetch(''),
+      ghFetch('/commits?per_page=30'),
+      ghFetch('/contributors?per_page=20'),
+    ]);
+    updateRepoStats(repoData, commits, contributors);
+    updateCommitFeed(commits);
+    updateMemberStats(commits, contributors);
+    fetchActivity();
+    document.getElementById('last-sync').textContent = 'Synced ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('last-sync').textContent = 'Sync failed — ' + e.message;
+    showError(e.message);
+  }
+}
+
+function updateRepoStats(repo, commits, contributors) {
+  document.getElementById('stat-commits').textContent = repo.size > 0 ? commits.length + (commits.length === 30 ? '+' : '') : '0';
+  document.getElementById('stat-contributors').textContent = contributors.length;
+  document.getElementById('stat-issues').textContent = repo.open_issues_count;
+  document.getElementById('stat-stars').textContent = repo.stargazers_count;
+  document.getElementById('stat-forks').textContent = repo.forks_count;
+  if (repo.pushed_at) {
+    const d = new Date(repo.pushed_at);
+    document.getElementById('stat-lastpush').textContent = timeAgo(d);
+    document.getElementById('stat-lastpush-sub').textContent = d.toLocaleDateString();
+  }
+}
+
+function updateCommitFeed(commits) {
+  const feed = document.getElementById('commit-feed');
+  if (!commits.length) { feed.innerHTML = '<div class="loading">No commits yet</div>'; return; }
+  feed.innerHTML = commits.slice(0, 12).map(c => {
+    const author = c.author ? c.author.login : (c.commit.author ? c.commit.author.name : 'unknown');
+    const member = guessMember(author, c.commit.message);
+    const folder = guessFolder(c.commit.message, c.files);
+    const color  = member ? AV_COLORS[member] : '#8b949e';
+    const init   = member ? AV_INITIALS[member] : (author.slice(0,2).toUpperCase());
+    const folderInfo = folder ? FOLDER_MAP[folder] : null;
+    return `
+      <div class="commit-item">
+        <div class="commit-av" style="background:${color}22; color:${color};">${init}</div>
+        <div class="commit-body">
+          <div class="commit-msg"><a href="${c.html_url}" target="_blank">${escHtml(c.commit.message.split('\n')[0])}</a></div>
+          <div class="commit-meta">
+            <span>${escHtml(author)}</span>
+            <span>${timeAgo(new Date(c.commit.author.date))}</span>
+            <span class="commit-hash">${c.sha.slice(0,7)}</span>
+            ${folderInfo ? `<span class="folder-tag" style="background:${folderInfo.color}22;color:${folderInfo.color}">${folderInfo.label}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateMemberStats(commits, contributors) {
+  const memberCommits = { mostafizur: 0, turja: 0, moaj: 0, deepak: 0 };
+  const memberFiles   = { mostafizur: 0, turja: 0, moaj: 0, deepak: 0 };
+  const memberLast    = { mostafizur: null, turja: null, moaj: null, deepak: null };
+
+  commits.forEach(c => {
+    const author = c.author ? c.author.login : '';
+    const msg    = c.commit.message || '';
+    const member = guessMember(author, msg);
+    if (member) {
+      memberCommits[member]++;
+      const d = new Date(c.commit.author.date);
+      if (!memberLast[member] || d > memberLast[member]) memberLast[member] = d;
+    }
+  });
+
+  contributors.forEach(con => {
+    const member = guessMember(con.login, '');
+    if (member) memberCommits[member] = Math.max(memberCommits[member], con.contributions);
+  });
+
+  const total = Object.values(memberCommits).reduce((a, b) => a + b, 0) || 1;
+  const members = ['mostafizur', 'turja', 'moaj', 'deepak'];
+  members.forEach(m => {
+    const pct = total > 0 ? Math.round((memberCommits[m] / total) * 100) : 0;
+    setEl(`commits-${m}`, memberCommits[m]);
+    setEl(`files-${m}`, memberFiles[m]);
+    setEl(`last-${m}`, memberLast[m] ? timeAgo(memberLast[m]) : '—');
+    const prog = Math.min(100, memberCommits[m] * 20);
+    setEl(`prog-${m}`, prog + '%');
+    const bar = document.getElementById(`bar-${m}`);
+    if (bar) bar.style.width = prog + '%';
+  });
+}
+
+async function fetchActivity() {
+  try {
+    const data = await ghFetch('/stats/commit_activity');
+    if (!Array.isArray(data) || !data.length) return;
+    renderHeatmap(data);
+  } catch(e) {}
+}
+
+function renderHeatmap(weeks) {
+  const recent = weeks.slice(-12);
+  const cells = [];
+  recent.forEach(w => {
+    w.days.forEach(d => {
+      let cls = 'hm-cell';
+      if (d > 0 && d <= 2) cls += ' hm-1';
+      else if (d <= 5)     cls += ' hm-2';
+      else if (d <= 10)    cls += ' hm-3';
+      else if (d > 10)     cls += ' hm-4';
+      cells.push(`<div class="${cls}" title="${d} commits"></div>`);
+    });
+  });
+
+  const months = [];
+  recent.forEach((w, i) => {
+    const d = new Date(w.week * 1000);
+    if (i === 0 || new Date(recent[i-1].week * 1000).getMonth() !== d.getMonth()) {
+      months.push(d.toLocaleString('default', { month: 'short' }));
+    } else { months.push(''); }
+  });
+
+  const wrap = document.getElementById('activity-section');
+  wrap.innerHTML = `
+    <div class="heatmap-wrap">
+      <div class="hm-months">${months.map(m => `<div class="hm-month" style="width:${7*15}px;font-size:10px;">${m}</div>`).join('')}</div>
+      <div class="heatmap-grid">${cells.join('')}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:#8b949e;">
+        Less <div class="hm-cell" style="display:inline-block"></div>
+        <div class="hm-cell hm-1" style="display:inline-block"></div>
+        <div class="hm-cell hm-2" style="display:inline-block"></div>
+        <div class="hm-cell hm-3" style="display:inline-block"></div>
+        <div class="hm-cell hm-4" style="display:inline-block"></div> More
+      </div>
+    </div>`;
+}
+
+function guessMember(login, msg) {
+  const l = (login + ' ' + msg).toLowerCase();
+  if (l.includes('mostafizur') || l.includes('rahman') || l.includes('rpi') || l.includes('broker') || l.includes('central')) return 'mostafizur';
+  if (l.includes('turja') || l.includes('barua') || l.includes('esp32_env') || l.includes('ky-015') || l.includes('lcd')) return 'turja';
+  if (l.includes('moaj') || l.includes('chowdhury') || l.includes('esp32_fire') || l.includes('flame') || l.includes('smoke') || l.includes('mq-2')) return 'moaj';
+  if (l.includes('deepak') || l.includes('kapil') || l.includes('arduino') || l.includes('relay') || l.includes('actuator') || l.includes('ky-019')) return 'deepak';
+  return null;
+}
+
+function guessFolder(msg, files) {
+  const m = msg.toLowerCase();
+  if (m.includes('rpi_central') || m.includes('broker') || m.includes('monitor.py')) return 'rpi_central';
+  if (m.includes('esp32_env') || m.includes('ky-015') || m.includes('lcd')) return 'esp32_env';
+  if (m.includes('esp32_fire') || m.includes('flame') || m.includes('mq-2')) return 'esp32_fire';
+  if (m.includes('arduino') || m.includes('relay') || m.includes('actuator')) return 'arduino_actuator';
+  if (m.includes('main') || m.includes('readme') || m.includes('dashboard')) return 'main';
+  return null;
+}
+
+function timeAgo(d) {
+  const s = Math.floor((Date.now() - d) / 1000);
+  if (s < 60)   return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400)return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+function setEl(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showError(msg) {
+  let box = document.getElementById('api-error');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'api-error';
+    box.className = 'error-box';
+    document.querySelector('.container').prepend(box);
+  }
+  box.textContent = '⚠ GitHub API error: ' + msg + '. Make sure the repo is public and the name is correct.';
+  box.style.display = 'block';
+}
+</script>
+</body>
+</html>

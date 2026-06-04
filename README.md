@@ -1,11 +1,12 @@
-# Smart Greenhouse Monitoring System with Fire and Gas Detection
+# 🌿 Smart Greenhouse Monitoring System with Fire and Gas Detection
 
-This repository is divided into **one main project folder** and **four member folders**. Each member is responsible for one node of the total IoT greenhouse system.
+> IoT embedded systems project · Raspberry Pi 3 + ESP32 + Arduino Uno WiFi Rev2 · MQTT over Wi-Fi
 
-## Project Dashboard
+---
 
-> This dashboard is automatically updated by GitHub Actions after every commit.
+## 📊 Project Dashboard
 
+<<<<<<< Updated upstream
 <!-- AUTO_DASHBOARD_START -->
 | Member | Responsible Node | Folder | Commits | Last Activity | Progress |
 |---|---|---|---:|---|---|
@@ -14,138 +15,159 @@ This repository is divided into **one main project folder** and **four member fo
 | Moaj Chowdhury | ESP32-2 — Fire and Gas Safety Node | `03_ESP32_FireGas_Safety_Node_MoajChowdhury/` | 1 | 2026-06-04 by Md Mostafizur Rahman | 20% |
 | Deepak Kapil | Arduino Uno WiFi Rev2 — Actuator / Relay Node | `04_Arduino_Relay_Node_DeepakKapil/` | 1 | 2026-06-04 by Md Mostafizur Rahman | 20% |
 <!-- AUTO_DASHBOARD_END -->
+=======
+Open `main/dashboard.html` in a browser and enter your GitHub repository name to see:
+>>>>>>> Stashed changes
 
-## Team Task Division
+- Live commit activity for each team member
+- Per-member progress bars and file counts
+- Recent commit feed with folder tags
+- 12-week contribution heatmap
 
-### 1. Md Mostafizur Rahman — Raspberry Pi 3 Central Controller
-Folder: `01_RaspberryPi_Central_Controller_MdMostafizurRahman/`
+The dashboard syncs automatically with the GitHub API every 60 seconds. No token or login is required for public repositories.
 
-Main tasks:
-- Install and configure MQTT broker on Raspberry Pi 3.
-- Create Python monitoring program.
-- Receive MQTT data from ESP32 and Arduino nodes.
-- Print or store sensor data.
-- Show dashboard or terminal status.
-- Send actuator commands to Arduino relay node.
+---
 
-Expected output:
-- MQTT broker running on Raspberry Pi.
-- Python dashboard or terminal monitor.
-- Logs of temperature, humidity, gas, flame, and relay status.
+## 👥 Team & Node Assignments
 
-### 2. Turja Barua — ESP32-1 Environment Monitoring Node
-Folder: `02_ESP32_Environment_Node_TurjaBarua/`
+| Folder | Node | Assigned To |
+|--------|------|-------------|
+| [`rpi_central/`](./rpi_central/README.md) | Raspberry Pi 3 — Central Controller & MQTT Broker | **Md Mostafizur Rahman** |
+| [`esp32_env/`](./esp32_env/README.md) | ESP32-1 — Environment Monitoring Node | **Turja Barua** |
+| [`esp32_fire/`](./esp32_fire/README.md) | ESP32-2 — Fire & Gas Safety Node | **Moaj Chowdhury** |
+| [`arduino_actuator/`](./arduino_actuator/README.md) | Arduino Uno WiFi Rev2 — Actuator / Relay Node | **Deepak Kapil** |
+| [`main/`](./main/) | Project dashboard, shared docs, system README | All members |
 
-Main tasks:
-- Connect KY-015 temperature and humidity sensor.
-- Connect I2C LCD display.
-- Connect rotation sensor as manual threshold input.
-- Read temperature and humidity values.
-- Show values locally on LCD.
-- Send environment data to Raspberry Pi using MQTT.
+Each folder contains its own `README.md` with full task description, wiring guide, software requirements, MQTT topics, and a personal deliverables checklist.
 
-Expected output:
-- Temperature and humidity readings.
-- LCD display output.
-- MQTT messages to Raspberry Pi.
+---
 
-### 3. Moaj Chowdhury — ESP32-2 Fire and Gas Safety Node
-Folder: `03_ESP32_FireGas_Safety_Node_MoajChowdhury/`
+## 🗂️ Repository Structure
 
-Main tasks:
-- Connect MQ-2 smoke/gas sensor.
-- Connect KY-026 analog flame sensor.
-- Connect KY-006 passive buzzer.
-- Connect KY-016 RGB LED.
-- Detect gas/smoke and flame/fire.
-- Turn on buzzer and warning LED during danger.
-- Send alert data to Raspberry Pi using MQTT.
-
-Expected output:
-- Gas/smoke detection status.
-- Flame/fire detection status.
-- Local buzzer and RGB LED warning.
-- MQTT alert messages.
-
-### 4. Deepak Kapil — Arduino Uno WiFi Rev2 Actuator / Relay Node
-Folder: `04_Arduino_Relay_Node_DeepakKapil/`
-
-Main tasks:
-- Connect KY-019 relay module.
-- Use relay to simulate actuator control with an LED.
-- Receive ON/OFF command from Raspberry Pi using Wi-Fi/MQTT.
-- Switch relay ON/OFF.
-- In future version, replace LED simulation with water pump, fan, or light.
-
-Expected output:
-- Relay ON/OFF control.
-- Actuator simulation using LED.
-- MQTT command reception.
-
-## Repository Folder Structure
-
-```text
-Smart_Greenhouse_Team_Project/
-├── README.md
-├── docs/
-│   └── system_overview.md
-├── scripts/
-│   └── update_dashboard.py
-├── .github/
-│   └── workflows/
-│       └── update-dashboard.yml
-├── 01_RaspberryPi_Central_Controller_MdMostafizurRahman/
+```
+smart-greenhouse/
+│
+├── main/
+│   ├── dashboard.html          ← live project dashboard (open in browser)
+│   └── README.md               ← this file
+│
+├── rpi_central/                ← Mostafizur
 │   ├── README.md
-│   ├── src/
-│   ├── logs/
-│   └── docs/
-├── 02_ESP32_Environment_Node_TurjaBarua/
+│   ├── broker_setup.md
+│   ├── monitor.py
+│   └── logs/
+│
+├── esp32_env/                  ← Turja
 │   ├── README.md
-│   ├── src/
-│   └── docs/
-├── 03_ESP32_FireGas_Safety_Node_MoajChowdhury/
+│   ├── wiring_diagram.md
+│   └── esp32_env_node/
+│       └── esp32_env_node.ino
+│
+├── esp32_fire/                 ← Moaj
 │   ├── README.md
-│   ├── src/
-│   └── docs/
-└── 04_Arduino_Relay_Node_DeepakKapil/
+│   ├── wiring_diagram.md
+│   └── esp32_fire_node/
+│       └── esp32_fire_node.ino
+│
+└── arduino_actuator/           ← Deepak
     ├── README.md
-    ├── src/
-    └── docs/
+    ├── wiring_diagram.md
+    └── arduino_actuator_node/
+        └── arduino_actuator_node.ino
 ```
 
-## MQTT Topic Plan
+---
 
-```text
-greenhouse/env/temperature
-greenhouse/env/humidity
-greenhouse/env/threshold
-greenhouse/safety/gas
-greenhouse/safety/flame
-greenhouse/safety/alarm
-greenhouse/actuator/relay/set
-greenhouse/actuator/relay/status
+## 🔧 Hardware Overview
+
+| Component | Qty | Assigned Node |
+|-----------|-----|---------------|
+| Raspberry Pi 3 Model B V1.2 | 1 | Central controller |
+| ESP32 microcontroller | 2 | Env. monitoring + Fire & Gas nodes |
+| Arduino Uno WiFi Rev2 | 2 | Actuator node (1 active) |
+| KY-015 Temp & Humidity sensor | 1 | ESP32-1 |
+| MQ-2 Smoke/Gas sensor | 1 | ESP32-2 |
+| KY-026 Flame sensor | 1 | ESP32-2 |
+| KY-006 Passive buzzer | 1 | ESP32-2 |
+| KY-016 RGB LED | 1 | ESP32-2 |
+| KY-019 5V Relay module | 1 | Arduino |
+| KY-051 Voltage level shifter | 1 | ESP32-1 (LCD signal) |
+| I2C LCD display | 1 | ESP32-1 |
+| Rotation sensor | 1 | ESP32-1 |
+| Micro SD card | 1 | Raspberry Pi |
+| Jumper wires & breadboard | — | All nodes |
+
+---
+
+## 📡 MQTT Topics
+
+| Topic | Direction | Published By | Subscribed By |
+|-------|-----------|--------------|---------------|
+| `greenhouse/temperature` | sensor → broker | ESP32-1 | Raspberry Pi |
+| `greenhouse/humidity` | sensor → broker | ESP32-1 | Raspberry Pi |
+| `greenhouse/rotation` | sensor → broker | ESP32-1 | Raspberry Pi |
+| `greenhouse/smoke` | sensor → broker | ESP32-2 | Raspberry Pi |
+| `greenhouse/flame` | sensor → broker | ESP32-2 | Raspberry Pi |
+| `greenhouse/alarm` | sensor → broker | ESP32-2 | Raspberry Pi |
+| `greenhouse/pump` | command → actuator | Raspberry Pi | Arduino |
+
+---
+
+## 🚀 Getting Started
+
+### Step 1 — Network setup (Mostafizur)
+1. Connect the Raspberry Pi to the team Wi-Fi network.
+2. Install and start the Mosquitto broker: `sudo apt install mosquitto && sudo systemctl enable mosquitto`.
+3. Note the Pi's IP address and share it with the team: `hostname -I`.
+
+### Step 2 — Each node member
+1. Open your folder's `README.md` for full wiring and code instructions.
+2. In your Arduino sketch, set the broker IP to the Raspberry Pi's address.
+3. Use the same Wi-Fi SSID and password as the Raspberry Pi.
+4. Commit your code with your name or folder in the commit message so the dashboard can track it.
+
+### Step 3 — Dashboard
+1. Create a GitHub repository and push all folders.
+2. Open `main/dashboard.html` in any browser.
+3. Enter `your-github-username/smart-greenhouse` in the repo field and click **Connect**.
+4. The dashboard will start tracking commits and showing progress automatically.
+
+---
+
+## ✅ Overall Project Checklist
+
+- [ ] **Mostafizur** — MQTT broker running, monitor.py live, CSV logging working
+- [ ] **Turja** — KY-015 + LCD + rotation sensor publishing to broker
+- [ ] **Moaj** — MQ-2 + KY-026 + buzzer + RGB LED alarm system working
+- [ ] **Deepak** — Arduino relay node receiving commands and switching relay
+- [ ] **All** — End-to-end test: all 3 nodes visible in Raspberry Pi terminal simultaneously
+- [ ] **All** — Code pushed to GitHub with clean commit messages
+
+---
+
+## 📝 Commit Message Convention
+
+Use your folder name in commit messages so the dashboard can automatically tag and track your work:
+
+```
+rpi_central: add CSV logging to monitor.py
+esp32_env: fix KY-015 DHT read timeout
+esp32_fire: tune MQ-2 smoke threshold to 400
+arduino_actuator: add MQTT reconnect logic
+main: update README hardware table
 ```
 
-## How the Dashboard Auto-Sync Works
+---
 
-1. A member commits changes inside their own folder.
-2. GitHub Actions runs `.github/workflows/update-dashboard.yml`.
-3. The workflow runs `scripts/update_dashboard.py`.
-4. The script checks Git commit history for each folder.
-5. The table between `AUTO_DASHBOARD_START` and `AUTO_DASHBOARD_END` is updated.
-6. The updated README is committed automatically.
+## 🔮 Future Improvements
 
-## Progress Rule
+- Connect a real water pump or fan to the relay output
+- Add soil moisture sensing and automatic irrigation scheduling
+- Web dashboard with live charts (Flask + Chart.js on Raspberry Pi)
+- Mobile push notifications on alarm events
+- Database logging with SQLite or InfluxDB
+- Solar power and battery backup
 
-Progress is estimated by number of commits in each member folder:
+---
 
-```text
-0 commits   = 0%
-1 commit    = 20%
-2 commits   = 40%
-3 commits   = 60%
-4 commits   = 80%
-5+ commits  = 100%
-```
-
-This is a simple student-project progress indicator. Final progress should also be confirmed manually by testing the hardware.
+*Smart Greenhouse Monitoring System — Embedded Systems / IoT Lab Project*
