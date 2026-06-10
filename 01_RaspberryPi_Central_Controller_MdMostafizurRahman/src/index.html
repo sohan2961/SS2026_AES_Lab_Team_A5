@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greenhouse Monitor</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div id="alarm-banner" class="alarm-banner hidden">
+  <span class="alarm-icon">⚠</span>
+  <span id="alarm-text">DANGER DETECTED</span>
+  <button onclick="dismissAlarm()">Dismiss</button>
+</div>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo">🌿</div>
+    <div>
+      <div class="topbar-title">Greenhouse Monitor</div>
+      <div class="topbar-sub">Raspberry Pi 3 — Central Controller</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="broker-status">
+      <span class="broker-dot" id="broker-dot"></span>
+      <span id="broker-label">Connecting…</span>
+    </div>
+    <div class="last-update">Updated: <span id="last-update">—</span></div>
+  </div>
+</header>
+
+<main class="main">
+
+  <section class="cards-row">
+
+    <div class="sensor-card" id="card-temp">
+      <div class="card-icon temp-icon">🌡</div>
+      <div class="card-body">
+        <div class="card-label">Temperature</div>
+        <div class="card-value" id="val-temp">--</div>
+        <div class="card-unit">°C</div>
+      </div>
+      <div class="card-bar"><div class="card-bar-fill temp-fill" id="bar-temp"></div></div>
+    </div>
+
+    <div class="sensor-card" id="card-hum">
+      <div class="card-icon hum-icon">💧</div>
+      <div class="card-body">
+        <div class="card-label">Humidity</div>
+        <div class="card-value" id="val-hum">--</div>
+        <div class="card-unit">%</div>
+      </div>
+      <div class="card-bar"><div class="card-bar-fill hum-fill" id="bar-hum"></div></div>
+    </div>
+
+    <div class="sensor-card" id="card-smoke">
+      <div class="card-icon smoke-icon">💨</div>
+      <div class="card-body">
+        <div class="card-label">Smoke / Gas</div>
+        <div class="card-value" id="val-smoke">--</div>
+        <div class="card-unit">ADC</div>
+      </div>
+      <div class="card-bar"><div class="card-bar-fill smoke-fill" id="bar-smoke"></div></div>
+    </div>
+
+    <div class="sensor-card" id="card-flame">
+      <div class="card-icon flame-icon">🔥</div>
+      <div class="card-body">
+        <div class="card-label">Flame</div>
+        <div class="card-value" id="val-flame">--</div>
+        <div class="card-unit" id="unit-flame"></div>
+      </div>
+      <div class="flame-indicator" id="flame-indicator"></div>
+    </div>
+
+    <div class="sensor-card" id="card-rotation">
+      <div class="card-icon rot-icon">🎛</div>
+      <div class="card-body">
+        <div class="card-label">Threshold</div>
+        <div class="card-value" id="val-rotation">--</div>
+        <div class="card-unit">°C set</div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="bottom-row">
+
+    <div class="panel chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">Live sensor feed</span>
+        <div class="chart-tabs">
+          <button class="chart-tab active" onclick="switchChart('temperature', this)">Temp</button>
+          <button class="chart-tab" onclick="switchChart('humidity', this)">Humidity</button>
+          <button class="chart-tab" onclick="switchChart('smoke', this)">Smoke</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="liveChart"></canvas>
+      </div>
+    </div>
+
+    <div class="right-col">
+
+      <div class="panel relay-panel">
+        <div class="panel-header">
+          <span class="panel-title">Relay control</span>
+          <span class="relay-state" id="relay-state-badge">—</span>
+        </div>
+        <p class="relay-desc">Publishes to <code>greenhouse/pump</code>. Arduino switches the KY-019 relay.</p>
+        <div class="relay-buttons">
+          <button class="relay-btn btn-on"  onclick="sendRelay('ON')">Turn ON</button>
+          <button class="relay-btn btn-off" onclick="sendRelay('OFF')">Turn OFF</button>
+        </div>
+        <div class="relay-feedback" id="relay-feedback"></div>
+      </div>
+
+      <div class="panel log-panel">
+        <div class="panel-header">
+          <span class="panel-title">Activity log</span>
+          <a href="/api/log/download" class="dl-link">↓ CSV</a>
+        </div>
+        <div class="log-list" id="log-list">
+          <div class="log-empty">Waiting for data…</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  Greenhouse Monitor · Raspberry Pi 3 · Raspberry Pi OS 64-bit · MQTT broker localhost:1883
+</footer>
+
+<script>
+const chartColors = {
+  temperature: { border: '#f97316', bg: 'rgba(249,115,22,0.12)' },
+  humidity:    { border: '#0ea5e9', bg: 'rgba(14,165,233,0.12)' },
+  smoke:       { border: '#a855f7', bg: 'rgba(168,85,247,0.12)' },
+};
+
+let activeKey = 'temperature';
+let alarmDismissed = false;
+
+const ctx = document.getElementById('liveChart').getContext('2d');
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Temperature (°C)',
+      data: [],
+      borderColor: chartColors.temperature.border,
+      backgroundColor: chartColors.temperature.bg,
+      borderWidth: 2,
+      pointRadius: 2,
+      tension: 0.4,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 300 },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#94a3b8', font: { size: 11 }, maxTicksLimit: 8 }, grid: { color: 'rgba(148,163,184,0.08)' } },
+      y: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { color: 'rgba(148,163,184,0.08)' } }
+    }
+  }
+});
+
+function switchChart(key, btn) {
+  activeKey = key;
+  document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const labels = { temperature: 'Temperature (°C)', humidity: 'Humidity (%)', smoke: 'Smoke (ADC)' };
+  chart.data.datasets[0].label           = labels[key];
+  chart.data.datasets[0].borderColor     = chartColors[key].border;
+  chart.data.datasets[0].backgroundColor = chartColors[key].bg;
+  chart.update('none');
+}
+
+function updateChart(h) {
+  const series = h[activeKey] || [];
+  chart.data.labels              = series.map(p => p.time);
+  chart.data.datasets[0].data   = series.map(p => p.value);
+  chart.update('none');
+}
+
+async function poll() {
+  try {
+    const res  = await fetch('/api/state');
+    const data = await res.json();
+    updateCards(data);
+    updateBroker(data.broker_connected);
+    updateAlarm(data.alarm, data.flame);
+    updateLog(data.log);
+    updateChart(data.history);
+    document.getElementById('last-update').textContent = data.last_update;
+  } catch(e) { updateBroker(false); }
+}
+
+function updateCards(d) {
+  const t = parseFloat(d.temperature);
+  setVal('val-temp', isNaN(t) ? '--' : t.toFixed(1));
+  setBar('bar-temp', isNaN(t) ? 0 : Math.min(100, (t / 50) * 100));
+  document.getElementById('card-temp').classList.toggle('card-warn', t > 35);
+
+  const h = parseFloat(d.humidity);
+  setVal('val-hum', isNaN(h) ? '--' : h.toFixed(1));
+  setBar('bar-hum', isNaN(h) ? 0 : Math.min(100, h));
+
+  const s = parseFloat(d.smoke);
+  setVal('val-smoke', isNaN(s) ? '--' : Math.round(s));
+  setBar('bar-smoke', isNaN(s) ? 0 : Math.min(100, (s / 1023) * 100));
+  document.getElementById('card-smoke').classList.toggle('card-danger', s > 400);
+
+  const flame = d.flame === '1';
+  setVal('val-flame', flame ? 'DETECTED' : 'Clear');
+  document.getElementById('card-flame').classList.toggle('card-danger', flame);
+  document.getElementById('flame-indicator').textContent = flame ? '🔥' : '';
+
+  const r = parseFloat(d.rotation);
+  setVal('val-rotation', isNaN(r) ? '--' : Math.round(r));
+}
+
+function updateBroker(connected) {
+  document.getElementById('broker-dot').className    = 'broker-dot ' + (connected ? 'dot-on' : 'dot-off');
+  document.getElementById('broker-label').textContent = connected ? 'Broker connected' : 'Broker offline';
+}
+
+function updateAlarm(alarm, flame) {
+  const danger = alarm === '1' || flame === '1';
+  const banner = document.getElementById('alarm-banner');
+  if (danger && !alarmDismissed) {
+    banner.classList.remove('hidden');
+    document.getElementById('alarm-text').textContent =
+      flame === '1' ? '🔥 FLAME DETECTED — Check ESP32-2 immediately'
+                    : '⚠ SMOKE / GAS alarm — Check ESP32-2';
+  } else if (!danger) {
+    banner.classList.add('hidden');
+    alarmDismissed = false;
+  }
+}
+
+function dismissAlarm() {
+  alarmDismissed = true;
+  document.getElementById('alarm-banner').classList.add('hidden');
+}
+
+const TOPIC_LABELS = {
+  temperature: '🌡 Temperature', humidity: '💧 Humidity',
+  smoke: '💨 Smoke/Gas', flame: '🔥 Flame',
+  rotation: '🎛 Threshold', alarm: '🚨 Alarm', pump: '⚡ Relay',
+};
+
+function updateLog(entries) {
+  if (!entries || !entries.length) return;
+  document.getElementById('log-list').innerHTML = entries.map(e => {
+    const label = TOPIC_LABELS[e.key] || e.topic;
+    const cls   = e.key === 'alarm' && e.value === '1' ? 'log-item log-alarm'
+                : e.key === 'pump'                     ? 'log-item log-cmd'
+                : 'log-item';
+    return `<div class="${cls}">
+      <span class="log-ts">${e.ts.split(' ')[1]}</span>
+      <span class="log-topic">${label}</span>
+      <span class="log-val">${e.value}</span>
+    </div>`;
+  }).join('');
+}
+
+async function sendRelay(command) {
+  const fb = document.getElementById('relay-feedback');
+  fb.textContent = 'Sending…';
+  try {
+    await fetch('/api/pump', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command }),
+    });
+    document.getElementById('relay-state-badge').textContent  = command;
+    document.getElementById('relay-state-badge').className    = 'relay-state ' + (command === 'ON' ? 'relay-on' : 'relay-off');
+    fb.textContent = `"${command}" sent at ${new Date().toLocaleTimeString()}`;
+    fb.className   = 'relay-feedback fb-ok';
+  } catch(e) {
+    fb.textContent = 'Failed to send command';
+    fb.className   = 'relay-feedback fb-err';
+  }
+}
+
+function setVal(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+function setBar(id, pct) { const el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
+
+poll();
+setInterval(poll, 3000);
+</script>
+</body>
+</html>
