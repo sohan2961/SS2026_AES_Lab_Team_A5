@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+logs/sensor_log.csv
+*.log
+.env
