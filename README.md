@@ -178,7 +178,7 @@ Expected output:
 - LCD display output.
 - MQTT messages to Raspberry Pi.
 
-### 3. Moaj Chowdhury — ESP32-2 Fire and Gas Safety Node
+### 3. Moaz Chowdhury — ESP32-2 Fire and Gas Safety Node
 
 Folder: `03_ESP32_FireGas_Safety_Node_MoajChowdhury/`
 
