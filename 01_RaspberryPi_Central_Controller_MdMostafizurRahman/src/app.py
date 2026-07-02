@@ -16,6 +16,7 @@ from flask import Flask, jsonify, render_template, request, send_file
 # ── Configuration ─────────────────────────────────────────────────
 BROKER_HOST = "localhost"
 BROKER_PORT  = 1883
+last_relay_command = None
 
 TOPICS = [
     "greenhouse/temperature",
@@ -74,6 +75,26 @@ def on_disconnect(client, userdata, rc):
     state["broker_connected"] = False
     print("[MQTT] Disconnected")
 
+def auto_control_relay():
+    global last_relay_command
+
+    try:
+        temperature = float(state["temperature"])
+        threshold = float(state["rotation"])
+    except ValueError:
+        print("[AUTO] Waiting for valid temperature and threshold...")
+        return
+
+    if temperature > threshold:
+        command = "ON"
+    else:
+        command = "OFF"
+
+    if command != last_relay_command:
+        mqtt_client.publish("greenhouse/actuator/relay/set", command)
+        last_relay_command = command
+        print(f"[AUTO] Temperature={temperature}°C, Threshold={threshold}°C → Relay {command}")
+
 def on_message(client, userdata, msg):
     topic = msg.topic
     value = msg.payload.decode().strip()
@@ -83,6 +104,9 @@ def on_message(client, userdata, msg):
     if key in state:
         state[key]           = value
         state["last_update"] = ts
+
+    if key in ("temperature", "rotation"):
+        auto_control_relay()
 
     if key in history:
         try:
@@ -143,11 +167,11 @@ def api_pump():
     command = data.get("command", "OFF").upper()
     if command not in ("ON", "OFF"):
         return jsonify({"error": "Invalid command"}), 400
-    mqtt_client.publish("greenhouse/pump", command)
+    mqtt_client.publish("greenhouse/actuator/relay/set", command)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     recent_log.appendleft({
         "ts":    ts,
-        "topic": "greenhouse/pump",
+        "topic": "greenhouse/actuator/relay/set",
         "value": command,
         "key":   "pump",
     })
