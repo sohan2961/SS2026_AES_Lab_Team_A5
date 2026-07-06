@@ -2,21 +2,71 @@
 
 # Raspberry Pi 3 — Central Controller
 
-**Assigned to:** Md Mostafizur Rahman  
+**Owner:** Md Mostafizur Rahman  
 **Node:** Central Controller / MQTT Broker / Flask Dashboard  
-**Status:** ✅ Fully implemented and tested
+**Status:** ✅ Fully implemented, tested, and updated with automatic relay control
 
 ---
 
 ## What This Node Does
 
-The Raspberry Pi 3 is the brain of the Smart Greenhouse system. It:
+The Raspberry Pi 3 is the **brain** of the Smart Greenhouse system.
 
-- Runs the **Mosquitto MQTT broker** that all other nodes connect to
-- Receives live sensor data from ESP32-1, ESP32-2, and the Arduino node
-- Displays all sensor values on a **live web dashboard**
-- Logs every sensor reading to a **CSV file** with timestamps
-- Sends **relay ON/OFF commands** to the Arduino actuator node
+It performs five main jobs:
+
+1. Runs the **Mosquitto MQTT broker** on port `1883`
+2. Receives live sensor data from the ESP32 and Arduino nodes
+3. Displays the values on a **Flask web dashboard**
+4. Logs received data and relay commands into a CSV file
+5. Sends relay ON/OFF commands to the Arduino actuator node
+
+The latest version also supports **automatic relay control**:
+
+```text
+Temperature > regulator threshold  → Relay ON
+Temperature <= regulator threshold → Relay OFF
+```
+
+The threshold is **not fixed in the code**.  
+It comes from the ESP32 environment node through the rotation sensor / regulator.
+
+---
+
+## Updated Control Logic
+
+The ESP32 environment node sends:
+
+```text
+greenhouse/temperature  → current temperature from KY-015/DHT11
+greenhouse/humidity     → current humidity
+greenhouse/rotation     → threshold temperature from regulator
+```
+
+The Raspberry Pi compares the live temperature with the regulator threshold.
+
+Example:
+
+```text
+Temperature = 31°C
+Threshold from regulator = 28°C
+Result: Raspberry Pi publishes ON to Arduino relay node
+```
+
+Another example:
+
+```text
+Temperature = 25°C
+Threshold from regulator = 28°C
+Result: Raspberry Pi publishes OFF to Arduino relay node
+```
+
+The command is sent to:
+
+```text
+greenhouse/actuator/relay/set
+```
+
+The Arduino relay node receives this MQTT command and switches the KY-019 relay.
 
 ---
 
@@ -24,138 +74,310 @@ The Raspberry Pi 3 is the brain of the Smart Greenhouse system. It:
 
 ### From any device on the same Wi-Fi network
 
-1. Make sure the Raspberry Pi is powered on and connected to Wi-Fi
-2. Open a browser on your phone, laptop, or PC
-3. Go to:
+1. Make sure the Raspberry Pi is powered on and connected to Wi-Fi.
+2. Make sure the dashboard service is running.
+3. Open a browser on your phone, laptop, or PC.
+4. Go to:
 
+```text
+http://172.20.10.4:5000
 ```
-http://172.20.10.2:5000
-```
 
-> If the IP address has changed, SSH into the Pi and run `hostname -I` to get the current IP.
-
-You will see the live dashboard with:
-
-| Section | What it shows |
-|---------|--------------|
-| 🌡 Temperature card | Live °C reading from ESP32-1 |
-| 💧 Humidity card | Live % reading from ESP32-1 |
-| 💨 Smoke / Gas card | Live ADC value from ESP32-2 |
-| 🔥 Flame card | Flame detected / Clear from ESP32-2 |
-| 🎛 Threshold card | Alarm threshold set by rotation sensor |
-| Live chart | 60-point rolling graph — switch between Temp / Humidity / Smoke |
-| Relay control | Turn the Arduino relay ON or OFF |
-| Activity log | Last 20 MQTT messages in real time |
-| ⚠ Alarm banner | Flashes red automatically when flame or alarm = 1 |
-
-### Broker status indicator
-
-Top right of the dashboard shows a green dot when the MQTT broker is connected and receiving data, or a red dot if the broker is offline.
-
----
-
-## How to Test Without ESP32 or Arduino
-
-SSH into the Pi and send fake sensor data from the terminal:
+> If the IP address changes, SSH into the Pi and run:
 
 ```bash
-mosquitto_pub -h localhost -t greenhouse/temperature -m "24.5"
-mosquitto_pub -h localhost -t greenhouse/humidity    -m "62.0"
-mosquitto_pub -h localhost -t greenhouse/smoke       -m "350"
-mosquitto_pub -h localhost -t greenhouse/flame       -m "1"
-mosquitto_pub -h localhost -t greenhouse/rotation    -m "30"
-mosquitto_pub -h localhost -t greenhouse/alarm       -m "1"
+hostname -I
 ```
 
-The dashboard updates within 3 seconds of each command.
+The dashboard shows:
+
+| Section | What it shows |
+|---|---|
+| Temperature card | Live temperature in °C from ESP32 environment node |
+| Humidity card | Live humidity in % from ESP32 environment node |
+| Smoke / Gas card | Live ADC value from ESP32 safety node |
+| Flame card | Flame detected / clear state from ESP32 safety node |
+| Threshold card | Temperature threshold selected by regulator |
+| Live chart | Rolling graph of received sensor values |
+| Relay control | Manual ON/OFF control for Arduino relay |
+| Activity log | Recent MQTT messages |
+| Alarm banner | Warning state when flame/alarm is detected |
+| Broker indicator | Shows MQTT broker connection status |
 
 ---
 
 ## Hardware
 
 | Component | Detail |
-|-----------|--------|
+|---|---|
 | Raspberry Pi 3 Model B V1.2 | Central controller |
-| Micro SD card | Raspberry Pi OS 64-bit + data storage |
-| Wi-Fi (built-in) | MQTT broker + dashboard server |
+| Micro SD card | Raspberry Pi OS 64-bit and project storage |
+| Built-in Wi-Fi | Network connection for MQTT and dashboard |
+| Laptop / phone browser | Used to view dashboard |
 
 ---
 
 ## Software Stack
 
-| Software | Version | Purpose |
-|----------|---------|---------|
-| Raspberry Pi OS | 64-bit (Debian Trixie) | Operating system |
-| Mosquitto | Latest | MQTT broker on port 1883 |
-| Python | 3.11 | Backend language |
-| Flask | 3.1.3 | Web dashboard server |
-| paho-mqtt | 2.1.0 | MQTT subscriber client |
-| Chart.js | 4.4.0 | Live sensor charts |
+| Software | Purpose |
+|---|---|
+| Raspberry Pi OS 64-bit | Operating system |
+| Mosquitto | MQTT broker |
+| Python 3 | Backend programming language |
+| Flask | Web dashboard server |
+| paho-mqtt | MQTT client library |
+| HTML/CSS/JavaScript | Dashboard frontend |
+| Chart.js | Live sensor chart |
+| systemd | Auto-start dashboard service |
 
 ---
 
 ## File Structure
 
-```
-src/
-├── app.py          ← Flask app, MQTT subscriber, CSV logger
-├── index.html      ← Dashboard HTML + JavaScript
-├── style.css       ← Dashboard stylesheet
-└── .gitignore      ← Excludes venv, logs, cache from Git
+Repository folder:
+
+```text
+01_RaspberryPi_Central_Controller_MdMostafizurRahman/
+└── src/
+    ├── app.py
+    ├── index.html
+    ├── style.css
+    └── .gitignore
 ```
 
-> Note: `templates/` and `static/` folders are used at runtime on the Pi.
-> Files are stored flat in `src/` in this repository for simplicity.
+Runtime folder on the Raspberry Pi:
+
+```text
+/home/sohan/rpi_central/
+├── app.py
+├── templates/
+│   └── index.html
+├── static/
+│   └── style.css
+├── logs/
+│   └── sensor_log.csv
+└── venv/
+```
+
+Important:
+
+```text
+Repository app.py:
+01_RaspberryPi_Central_Controller_MdMostafizurRahman/src/app.py
+
+Active running app.py:
+ /home/sohan/rpi_central/app.py
+```
+
+The service uses the active runtime file:
+
+```text
+/home/sohan/rpi_central/app.py
+```
 
 ---
 
 ## MQTT Topics
 
+### Topics received by Raspberry Pi
+
 | Topic | Direction | Description |
-|-------|-----------|-------------|
-| `greenhouse/temperature` | Subscribe | Temperature from ESP32-1 |
-| `greenhouse/humidity` | Subscribe | Humidity from ESP32-1 |
-| `greenhouse/rotation` | Subscribe | Alarm threshold from ESP32-1 |
-| `greenhouse/smoke` | Subscribe | Smoke/gas ADC value from ESP32-2 |
-| `greenhouse/flame` | Subscribe | Flame detection flag from ESP32-2 |
-| `greenhouse/alarm` | Subscribe | Global alarm state from ESP32-2 |
-| `greenhouse/pump` | Publish | Relay ON/OFF command to Arduino |
+|---|---|---|
+| `greenhouse/temperature` | Subscribe | Temperature from ESP32 environment node |
+| `greenhouse/humidity` | Subscribe | Humidity from ESP32 environment node |
+| `greenhouse/rotation` | Subscribe | Regulator threshold value from ESP32 environment node |
+| `greenhouse/smoke` | Subscribe | Smoke/gas value from ESP32 safety node |
+| `greenhouse/flame` | Subscribe | Flame detection value from ESP32 safety node |
+| `greenhouse/alarm` | Subscribe | Alarm status from ESP32 safety node |
+| `greenhouse/actuator/relay/status` | Subscribe | Relay status from Arduino node |
+
+### Topic published by Raspberry Pi
+
+| Topic | Direction | Description |
+|---|---|---|
+| `greenhouse/actuator/relay/set` | Publish | Relay ON/OFF command to Arduino actuator node |
+
+Old topic removed:
+
+```text
+greenhouse/pump
+```
+
+The dashboard must not publish to `greenhouse/pump` anymore.  
+It now publishes relay commands to:
+
+```text
+greenhouse/actuator/relay/set
+```
 
 ---
 
-## Setup Instructions (from scratch)
+## Manual Relay Control
 
-### 1. Flash the SD card
-- Use **Raspberry Pi Imager**
-- OS: Raspberry Pi OS 64-bit
-- Configure hostname, SSH, Wi-Fi, username in the imager settings
+The dashboard ON/OFF button sends:
+
+```text
+ON  → greenhouse/actuator/relay/set
+OFF → greenhouse/actuator/relay/set
+```
+
+Manual terminal test from Raspberry Pi:
+
+```bash
+mosquitto_pub -t greenhouse/actuator/relay/set -m "ON"
+mosquitto_pub -t greenhouse/actuator/relay/set -m "OFF"
+```
+
+To watch the command:
+
+```bash
+mosquitto_sub -t greenhouse/actuator/relay/set -v
+```
+
+Expected output:
+
+```text
+greenhouse/actuator/relay/set ON
+greenhouse/actuator/relay/set OFF
+```
+
+---
+
+## Automatic Relay Control Test
+
+Open Terminal 1 on the Raspberry Pi:
+
+```bash
+mosquitto_sub -t greenhouse/actuator/relay/set -v
+```
+
+Open Terminal 2 and publish a threshold and temperature:
+
+```bash
+mosquitto_pub -t greenhouse/rotation -m "28"
+mosquitto_pub -t greenhouse/temperature -m "25"
+```
+
+Expected result:
+
+```text
+greenhouse/actuator/relay/set OFF
+```
+
+Now publish a higher temperature:
+
+```bash
+mosquitto_pub -t greenhouse/temperature -m "31"
+```
+
+Expected result:
+
+```text
+greenhouse/actuator/relay/set ON
+```
+
+Now increase the regulator threshold:
+
+```bash
+mosquitto_pub -t greenhouse/rotation -m "35"
+```
+
+Expected result:
+
+```text
+greenhouse/actuator/relay/set OFF
+```
+
+This proves that the relay is controlled automatically using the regulator threshold.
+
+---
+
+## Simulated Sensor Data Test
+
+Use these commands to test the dashboard without real ESP32 sensors:
+
+```bash
+mosquitto_pub -h localhost -t greenhouse/temperature -m "24.5"
+mosquitto_pub -h localhost -t greenhouse/humidity    -m "62.0"
+mosquitto_pub -h localhost -t greenhouse/smoke       -m "350"
+mosquitto_pub -h localhost -t greenhouse/flame       -m "0"
+mosquitto_pub -h localhost -t greenhouse/rotation    -m "30"
+mosquitto_pub -h localhost -t greenhouse/alarm       -m "0"
+```
+
+The dashboard should update within a few seconds.
+
+---
+
+## Setup Instructions From Scratch
+
+### 1. Flash Raspberry Pi OS
+
+Use **Raspberry Pi Imager**.
+
+Recommended settings:
+
+```text
+OS: Raspberry Pi OS 64-bit
+Hostname: sohan
+Username: sohan
+SSH: enabled
+Wi-Fi: configured
+```
+
+---
 
 ### 2. SSH into the Pi
+
 ```bash
 ssh sohan@sohan.local
 ```
 
-### 3. Install dependencies
+If `.local` does not work, use the IP address:
+
 ```bash
-sudo apt update && sudo apt full-upgrade -y
+ssh sohan@172.20.10.4
+```
+
+---
+
+### 3. Install dependencies
+
+```bash
+sudo apt update
+sudo apt full-upgrade -y
 sudo apt install -y mosquitto mosquitto-clients python3-pip python3-venv
 ```
 
-### 4. Configure MQTT broker
+---
+
+### 4. Configure Mosquitto
+
+Open the configuration file:
+
 ```bash
 sudo nano /etc/mosquitto/mosquitto.conf
 ```
-Add at the bottom:
-```
+
+Add this at the bottom:
+
+```text
 listener 1883
 allow_anonymous true
 ```
+
+Restart Mosquitto:
+
 ```bash
 sudo systemctl enable mosquitto
 sudo systemctl restart mosquitto
+sudo systemctl status mosquitto
 ```
 
+---
+
 ### 5. Set up Python environment
+
 ```bash
 mkdir -p ~/rpi_central/{templates,static,logs}
 cd ~/rpi_central
@@ -164,27 +386,50 @@ source venv/bin/activate
 pip install flask paho-mqtt
 ```
 
-### 6. Copy files from this repo
+---
+
+### 6. Copy repository files to runtime folder
+
+From the GitHub repository folder:
+
 ```bash
-cp src/app.py        ~/rpi_central/app.py
-cp src/index.html    ~/rpi_central/templates/index.html
-cp src/style.css     ~/rpi_central/static/style.css
+cp 01_RaspberryPi_Central_Controller_MdMostafizurRahman/src/app.py     ~/rpi_central/app.py
+cp 01_RaspberryPi_Central_Controller_MdMostafizurRahman/src/index.html ~/rpi_central/templates/index.html
+cp 01_RaspberryPi_Central_Controller_MdMostafizurRahman/src/style.css  ~/rpi_central/static/style.css
 ```
 
-### 7. Run the dashboard
+---
+
+### 7. Run dashboard manually
+
 ```bash
 cd ~/rpi_central
 source venv/bin/activate
 python3 app.py
 ```
 
-Open browser at `http://<Pi-IP>:5000`
+Open:
 
-### 8. Enable auto-start on boot
+```text
+http://172.20.10.4:5000
+```
+
+Stop manual run with:
+
+```text
+CTRL + C
+```
+
+---
+
+### 8. Create systemd service
+
 ```bash
 sudo nano /etc/systemd/system/greenhouse.service
 ```
+
 Paste:
+
 ```ini
 [Unit]
 Description=Greenhouse Flask Dashboard
@@ -200,10 +445,19 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 ```
+
+Enable and start:
+
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable greenhouse
-sudo systemctl start greenhouse
+sudo systemctl enable greenhouse.service
+sudo systemctl start greenhouse.service
+```
+
+Check:
+
+```bash
+sudo systemctl status greenhouse.service
 ```
 
 ---
@@ -211,27 +465,137 @@ sudo systemctl start greenhouse
 ## Useful Commands
 
 | Task | Command |
-|------|---------|
-| Check dashboard service | `sudo systemctl status greenhouse` |
-| View live logs | `sudo journalctl -u greenhouse -f` |
-| Restart dashboard | `sudo systemctl restart greenhouse` |
-| Get Pi IP address | `hostname -I` |
+|---|---|
+| Check dashboard service | `sudo systemctl status greenhouse.service` |
+| Restart dashboard | `sudo systemctl restart greenhouse.service` |
+| Stop dashboard | `sudo systemctl stop greenhouse.service` |
+| View live dashboard logs | `sudo journalctl -u greenhouse.service -f` |
+| Show last 50 service logs | `sudo journalctl -u greenhouse.service -n 50 --no-pager` |
 | Check broker status | `sudo systemctl status mosquitto` |
-| Send test message | `mosquitto_pub -h localhost -t greenhouse/temperature -m "25.0"` |
-| Download sensor log | Open `http://172.20.10.2:5000/api/log/download` in browser |
+| Get Pi IP address | `hostname -I` |
+| Subscribe to all greenhouse topics | `mosquitto_sub -t 'greenhouse/#' -v` |
+| Download CSV log | `http://172.20.10.4:5000/api/log/download` |
+
+---
+
+## Troubleshooting
+
+### Dashboard does not open
+
+Check service:
+
+```bash
+sudo systemctl status greenhouse.service
+```
+
+Check logs:
+
+```bash
+sudo journalctl -u greenhouse.service -n 50 --no-pager
+```
+
+Restart:
+
+```bash
+sudo systemctl restart greenhouse.service
+```
+
+---
+
+### Service fails after editing app.py
+
+Run manually to see the exact Python error:
+
+```bash
+sudo systemctl stop greenhouse.service
+cd /home/sohan/rpi_central
+source venv/bin/activate
+python3 app.py
+```
+
+Common issue:
+
+```text
+IndentationError
+```
+
+Fix indentation, then restart:
+
+```bash
+sudo systemctl restart greenhouse.service
+```
+
+---
+
+### Relay does not respond
+
+Watch the relay command topic:
+
+```bash
+mosquitto_sub -t greenhouse/actuator/relay/set -v
+```
+
+Then publish:
+
+```bash
+mosquitto_pub -t greenhouse/actuator/relay/set -m "ON"
+mosquitto_pub -t greenhouse/actuator/relay/set -m "OFF"
+```
+
+If messages appear but the relay does not switch, check Arduino wiring and active LOW relay logic.
+
+---
+
+### ESP32 values do not appear
+
+Subscribe to all MQTT topics:
+
+```bash
+mosquitto_sub -t 'greenhouse/#' -v
+```
+
+If no messages appear:
+
+- Check ESP32 Wi-Fi
+- Check Pi IP in ESP32 code
+- Check Mosquitto service
+- Make sure ESP32 and Pi are on the same Wi-Fi network
 
 ---
 
 ## Network Info for Team
 
-| Detail | Value |
-|--------|-------|
-| Pi IP address | `172.20.10.2` |
+| Detail | Current value |
+|---|---|
+| Pi IP address | `172.20.10.4` |
 | MQTT broker port | `1883` |
-| Dashboard URL | `http://172.20.10.2:5000` |
-| MQTT broker address (for ESP32/Arduino sketches) | `172.20.10.2` |
+| Dashboard URL | `http://172.20.10.4:5000` |
+| MQTT broker address for ESP32/Arduino | `172.20.10.4` |
+| Active runtime folder | `/home/sohan/rpi_central` |
+| GitHub repository folder | `/home/sohan/SS2026_AES_Lab_Team_A5` |
 
-> All team members must connect their devices to the **same Wi-Fi network** as the Raspberry Pi.
+> If the Pi IP changes, update the MQTT broker address in the ESP32 and Arduino sketches.
+
+---
+
+## Updating GitHub
+
+After editing the active runtime file, copy it back into the repository:
+
+```bash
+cp /home/sohan/rpi_central/app.py /home/sohan/SS2026_AES_Lab_Team_A5/01_RaspberryPi_Central_Controller_MdMostafizurRahman/src/app.py
+```
+
+Then push:
+
+```bash
+cd /home/sohan/SS2026_AES_Lab_Team_A5
+git status
+git add 01_RaspberryPi_Central_Controller_MdMostafizurRahman/src/app.py
+git commit -m "rpi_central: add automatic relay control using regulator threshold"
+git pull --rebase origin main
+git push origin main
+```
 
 ---
 
@@ -241,8 +605,16 @@ sudo systemctl start greenhouse
 - [x] Mosquitto MQTT broker installed and running
 - [x] Flask dashboard running on port 5000
 - [x] Live sensor cards updating in real time
-- [x] Relay ON/OFF control working
 - [x] CSV data logging to `logs/sensor_log.csv`
+- [x] Manual relay ON/OFF control working
+- [x] Correct relay command topic added: `greenhouse/actuator/relay/set`
+- [x] Automatic relay control using temperature and regulator threshold
 - [x] Auto-start on boot via systemd
-- [x] Tested with simulated sensor data
+- [x] Tested with simulated MQTT sensor data
 - [x] Code pushed to GitHub
+
+---
+
+## Short Explanation for Presentation
+
+> The Raspberry Pi acts as the central controller of the Smart Greenhouse system. It runs the MQTT broker and Flask dashboard. The ESP32 environment node sends temperature, humidity, and regulator threshold values to the Pi. The Pi compares the temperature with the threshold. If the temperature is higher than the threshold, the Pi automatically sends an ON command to the Arduino relay node. If the temperature is lower or equal, it sends an OFF command. In this way, the Raspberry Pi controls the actuator automatically using MQTT communication.
