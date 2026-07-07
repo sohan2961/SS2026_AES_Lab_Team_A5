@@ -7,8 +7,8 @@ README = ROOT / "README.md"
 
 MEMBERS = [
     ("Md Mostafizur Rahman", "Raspberry Pi 3 — Central Controller", "01_RaspberryPi_Central_Controller_MdMostafizurRahman/"),
-    ("Turja Barua", "ESP32-1 — Environment Monitoring Node", "02_ESP32_Environment_Node_TurjaBarua/"),
-    ("Moaj Chowdhury", "ESP32-2 — Fire and Gas Safety Node", "03_ESP32_FireGas_Safety_Node_MoajChowdhury/"),
+    ("Turja Barua", "ESP32 — Environment Monitoring Node", "02_ESP32_Environment_Node_TurjaBarua/"),
+    ("Moaj Chowdhury", "Arduino Uno WiFi Rev2 — Fire and Gas Safety Node", "03_Arduino_FireGas_Safety_Node_MoajChowdhury/"),
     ("Deepak Kapil", "Arduino Uno WiFi Rev2 — Actuator / Relay Node", "04_Arduino_Relay_Node_DeepakKapil/"),
 ]
 
