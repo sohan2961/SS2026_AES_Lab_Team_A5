@@ -6,7 +6,7 @@ The **Smart Greenhouse Monitoring System with Fire and Gas Detection** is an IoT
 
 This repository is divided into **one main project folder** and **four member folders**. Each member is responsible for one node of the total IoT greenhouse system.
 
-The updated system uses the hardware that is currently available: **Raspberry Pi 3 Model B V1.2**, **two ESP32 boards**, and **one Arduino Uno WiFi Rev2** as the active actuator node. The Raspberry Pi works as the central controller and MQTT broker. ESP32 boards collect sensor data and handle safety alerts. The Arduino Uno WiFi Rev2 controls the relay output.
+The updated system uses the hardware that is currently available: **Raspberry Pi 3 Model B V1.2**, **one ESP32 boards**, and **two Arduino Uno WiFi Rev2** as the active actuator node. The Raspberry Pi works as the central controller and MQTT broker. The ESP32 board collects environment data. One Arduino Uno WiFi Rev2 handles fire/gas safety alerts, and the other Arduino Uno WiFi Rev2 controls the relay output.
 
 Since there is no real pump available now, the relay is used to simulate an actuator with an LED. In a future version, the same relay can control a water pump, fan, or light.
 
@@ -38,7 +38,7 @@ Since there is no real pump available now, the relay is used to simulate an actu
 |---:|---|---|
 | 1 | Raspberry Pi 3 Model B V1.2 | 1 |
 | 2 | ESP32 microcontroller | 2 |
-| 3 | Arduino Uno WiFi Rev2 microcontroller | 1 |
+| 3 | Arduino Uno WiFi Rev2 microcontroller | 2 |
 | 4 | MQ-2 smoke/gas sensor | 1 |
 | 5 | KY-026 analog flame sensor | 1 |
 | 6 | KY-019 5V relay module | 1 |
@@ -65,7 +65,7 @@ The system is divided into one central controller and three main working nodes.
 Main tasks:
 
 - Run MQTT broker.
-- Receive sensor data from ESP32 and Arduino nodes.
+- Receive sensor data from ESP32 and Arduino Uno WiFi Rev2 nodes.
 - Store or print sensor data.
 - Show dashboard or terminal status.
 - Send commands to actuator node if needed.
@@ -90,10 +90,10 @@ Main tasks:
 - Send data to the Raspberry Pi using Wi-Fi/MQTT.
 - Use the rotation sensor as a manual input, for example to set an alarm threshold.
 
-### 3. ESP32-2 — Fire and Gas Safety Node
+### 3. Arduino Uno WiFi Rev2 — Fire and Gas Safety Node
 
 **Assigned to:** Moaj Chowdhury  
-**Folder:** `03_ESP32_FireGas_Safety_Node_MoajChowdhury/`
+**Folder:** `03_Arduino_FireGas_Safety_Node_MoajChowdhury/`
 
 Connected components:
 
@@ -148,7 +148,7 @@ Main tasks:
 
 - Install and configure MQTT broker on Raspberry Pi 3.
 - Create Python monitoring program.
-- Receive MQTT data from ESP32 and Arduino nodes.
+- Receive MQTT data from ESP32 and Arduino Uno WiFi Rev2 nodes.
 - Print or store sensor data.
 - Show dashboard or terminal status.
 - Send actuator commands to Arduino relay node.
@@ -178,9 +178,9 @@ Expected output:
 - LCD display output.
 - MQTT messages to Raspberry Pi.
 
-### 3. Moaz Chowdhury — ESP32-2 Fire and Gas Safety Node
+### 3. Moaz Chowdhury — Arduino Uno WiFi Rev2 Fire and Gas Safety Node
 
-Folder: `03_ESP32_FireGas_Safety_Node_MoajChowdhury/`
+Folder: `03_Arduino_FireGas_Safety_Node_MoajChowdhury/`
 
 Main tasks:
 
@@ -240,7 +240,7 @@ Smart_Greenhouse_Team_Project/
 │   ├── README.md
 │   ├── src/
 │   └── docs/
-├── 03_ESP32_FireGas_Safety_Node_MoajChowdhury/
+├── 03_Arduino_FireGas_Safety_Node_MoajChowdhury/
 │   ├── README.md
 │   ├── src/
 │   └── docs/
@@ -258,7 +258,7 @@ The system uses **Wi-Fi and MQTT** for communication between the nodes.
 
 - The Raspberry Pi 3 runs the MQTT broker.
 - ESP32-1 publishes environment data.
-- ESP32-2 publishes fire, smoke, gas, and alarm data.
+- Arduino Uno WiFi Rev2 safety node publishes fire, smoke, gas, and alarm data.
 - Arduino Uno WiFi Rev2 subscribes to relay commands and publishes relay status.
 
 ---
@@ -270,10 +270,10 @@ The system uses **Wi-Fi and MQTT** for communication between the nodes.
 | `greenhouse/env/temperature` | ESP32-1 → Raspberry Pi | Temperature value |
 | `greenhouse/env/humidity` | ESP32-1 → Raspberry Pi | Humidity value |
 | `greenhouse/env/threshold` | ESP32-1 → Raspberry Pi | Manual threshold from rotation sensor |
-| `greenhouse/safety/smoke` | ESP32-2 → Raspberry Pi | MQ-2 smoke/gas analog value |
-| `greenhouse/safety/flame` | ESP32-2 → Raspberry Pi | Flame sensor status/value |
-| `greenhouse/safety/status` | ESP32-2 → Raspberry Pi | Safety status text |
-| `greenhouse/safety/alarm` | ESP32-2 → Raspberry Pi | Alarm state |
+| `greenhouse/safety/smoke` | Arduino Uno WiFi Rev2 → Raspberry Pi | MQ-2 smoke/gas analog value |
+| `greenhouse/safety/flame` | Arduino Uno WiFi Rev2 → Raspberry Pi | Flame sensor status/value |
+| `greenhouse/safety/status` | Arduino Uno WiFi Rev2 → Raspberry Pi | Safety status text |
+| `greenhouse/safety/alarm` | Arduino Uno WiFi Rev2 → Raspberry Pi | Alarm state |
 | `greenhouse/actuator/relay/set` | Raspberry Pi → Arduino | Relay ON/OFF command |
 | `greenhouse/actuator/relay/status` | Arduino → Raspberry Pi | Relay feedback status |
 
@@ -285,9 +285,9 @@ The system uses **Wi-Fi and MQTT** for communication between the nodes.
 2. ESP32-1 displays the values on the I2C LCD.
 3. The rotation sensor can be used to change a threshold value manually.
 4. ESP32-1 sends environment data to the Raspberry Pi through MQTT.
-5. ESP32-2 reads the MQ-2 gas sensor and KY-026 flame sensor.
-6. If smoke, gas, or flame is detected, ESP32-2 activates the buzzer and RGB LED.
-7. ESP32-2 sends an alert message to the Raspberry Pi.
+5. Arduino Uno WiFi Rev2 reads the MQ-2 gas sensor and KY-026 flame sensor.
+6. If smoke, gas, or flame is detected, Arduino Uno WiFi Rev2 activates the buzzer and RGB LED.
+7. Arduino Uno WiFi Rev2 sends an alert message to the Raspberry Pi.
 8. The Raspberry Pi shows the received values and alert status.
 9. The Raspberry Pi can send an ON/OFF command to the Arduino relay node.
 10. The Arduino Uno WiFi Rev2 switches the relay ON/OFF to simulate an actuator.
@@ -315,7 +315,7 @@ The system uses **Wi-Fi and MQTT** for communication between the nodes.
 |---|---|---|---|---|
 | Central Controller | Raspberry Pi 3 Model B V1.2 | MQTT messages | Dashboard / terminal / commands | Monitoring, logging, and control |
 | Environment Node | ESP32-1 | KY-015 sensor, rotation sensor | I2C LCD, MQTT data | Temperature and humidity monitoring |
-| Safety Node | ESP32-2 | MQ-2 sensor, KY-026 sensor | Buzzer, RGB LED, MQTT alert | Fire, smoke, and gas detection |
+| Safety Node | Arduino Uno WiFi Rev2 | MQ-2 sensor, KY-026 sensor | Buzzer, RGB LED, MQTT alert | Fire, smoke, and gas detection |
 | Actuator Node | Arduino Uno WiFi Rev2 | MQTT command | Relay, optional LED | Simulated pump/fan/light control |
 
 ---
@@ -328,9 +328,9 @@ The system uses **Wi-Fi and MQTT** for communication between the nodes.
 - [ ] ESP32-1 reads KY-015 temperature and humidity values.
 - [ ] ESP32-1 displays values on I2C LCD.
 - [ ] ESP32-1 publishes threshold value from rotation sensor.
-- [ ] ESP32-2 reads MQ-2 smoke/gas values.
-- [ ] ESP32-2 detects flame/fire using KY-026.
-- [ ] ESP32-2 activates buzzer and RGB LED during danger.
+- [ ] Arduino Uno WiFi Rev2 reads MQ-2 smoke/gas values.
+- [ ] Arduino Uno WiFi Rev2 detects flame/fire using KY-026.
+- [ ] Arduino Uno WiFi Rev2 activates buzzer and RGB LED during danger.
 - [ ] Arduino receives relay command using MQTT.
 - [ ] Arduino switches relay ON/OFF and simulates actuator using LED.
 - [ ] End-to-end MQTT communication tested between all nodes.
@@ -358,7 +358,7 @@ Use the folder name in every commit message so the dashboard can track member pr
 ```text
 01_RaspberryPi_Central_Controller_MdMostafizurRahman: add MQTT broker setup
 02_ESP32_Environment_Node_TurjaBarua: add KY-015 sensor reading
-03_ESP32_FireGas_Safety_Node_MoajChowdhury: add MQ-2 smoke threshold
+03_Arduino_FireGas_Safety_Node_MoajChowdhury: add MQ-2 smoke threshold
 04_Arduino_Relay_Node_DeepakKapil: add relay ON OFF command
 README: update system overview
 ```
