@@ -1,8 +1,8 @@
-# 03_ESP32_FireGas_Safety_Node_MoajChowdhury
+# 03_Arduino_FireGas_Safety_Node_MoajChowdhury
 
 Owner: Moaj Chowdhury
 
-Purpose: ESP32-2 detects gas/smoke using MQ-2, detects flame using KY-026, activates buzzer/RGB LED, and sends safety alerts using MQTT.
+Purpose: Arduino Uno WiFi Rev2 detects gas/smoke using MQ-2, detects flame using KY-026, activates buzzer/RGB LED, and sends safety alerts using MQTT.
 
 Tasks:
 - Read MQ-2 gas/smoke sensor.
