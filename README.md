@@ -20,8 +20,8 @@ Since there is no real pump available now, the relay is used to simulate an actu
 | Member | Responsible Node | Folder | Commits | Last Activity | Progress |
 |---|---|---|---:|---|---|
 | Md Mostafizur Rahman | Raspberry Pi 3 — Central Controller | `01_RaspberryPi_Central_Controller_MdMostafizurRahman/` | 17 | 2026-07-06 by Md Mostafizur Rahman | 100% |
-| Turja Barua | ESP32-1 — Environment Monitoring Node | `02_ESP32_Environment_Node_TurjaBarua/` | 7 | 2026-07-06 by Md Mostafizur Rahman | 100% |
-| Moaj Chowdhury | ESP32-2 — Fire and Gas Safety Node | `03_ESP32_FireGas_Safety_Node_MoajChowdhury/` | 4 | 2026-07-06 by Moaz Bin Alamgir Chowdhury | 80% |
+| Turja Barua | ESP32 — Environment Monitoring Node | `02_ESP32_Environment_Node_TurjaBarua/` | 7 | 2026-07-06 by Md Mostafizur Rahman | 100% |
+| Moaj Chowdhury | Arduino Uno WiFi Rev2 — Fire and Gas Safety Node | `03_Arduino_FireGas_Safety_Node_MoajChowdhury/` | 1 | 2026-07-07 by Md Mostafizur Rahman | 20% |
 | Deepak Kapil | Arduino Uno WiFi Rev2 — Actuator / Relay Node | `04_Arduino_Relay_Node_DeepakKapil/` | 7 | 2026-07-06 by Md Mostafizur Rahman | 100% |
 <!-- AUTO_DASHBOARD_END -->
 
