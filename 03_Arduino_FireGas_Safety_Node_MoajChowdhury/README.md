@@ -1,6 +1,6 @@
-# 03_Arduino_FireGas_Safety_Node_MoajChowdhury
+# 03_Arduino_FireGas_Safety_Node_MoazChowdhury
 
-Owner: Moaj Chowdhury
+Owner: Moaz Chowdhury
 
 Purpose: Arduino Uno WiFi Rev2 detects gas/smoke using MQ-2, detects flame using KY-026, activates buzzer/RGB LED, and sends safety alerts using MQTT.
 
