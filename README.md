@@ -37,7 +37,7 @@ Since there is no real pump available now, the relay is used to simulate an actu
 | No. | Component | Quantity / Note |
 |---:|---|---|
 | 1 | Raspberry Pi 3 Model B V1.2 | 1 |
-| 2 | ESP32 microcontroller | 2 |
+| 2 | ESP32 microcontroller | 1 |
 | 3 | Arduino Uno WiFi Rev2 microcontroller | 2 |
 | 4 | MQ-2 smoke/gas sensor | 1 |
 | 5 | KY-026 analog flame sensor | 1 |
